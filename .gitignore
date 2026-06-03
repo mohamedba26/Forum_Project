@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.env
+forum-multimedia.zip
+.DS_Store

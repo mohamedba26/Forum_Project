@@ -1,0 +1,258 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  utilisateur
+  moderateur
+  admin
+}
+
+enum Statut {
+  en_attente
+  valide
+  supprime
+}
+
+enum TypeMedia {
+  texte
+  image
+  vocal
+  video
+}
+
+enum TypeInteraction {
+  commentaire
+  chat
+  report
+  reaction
+}
+
+model Utilisateur {
+  id          Int      @id @default(autoincrement())
+  nom         String
+  email       String   @unique
+  motDePasse  String
+  estBloque   Boolean  @default(false)
+  role        Role     @default(utilisateur)
+  avatar      String?  // e.g. "avatar_1", "avatar_2" ...
+  createdAt   DateTime @default(now())
+
+  // Relations
+  sujetsProposes  Sujet[]          @relation("AuteurSujet")
+  sujetsModeres   Sujet[]          @relation("ModerateurSujet")
+  postes          Poste[]          @relation("AuteurPoste")
+  interactions    Interaction[]    @relation("AuteurInteraction")
+  reportsEmis     Report[]         @relation("ReporteurUtilisateur")
+  reportsRecus    Report[]         @relation("UtilisateurSignale")
+  notifications   Notification[]   @relation("NotificationsRecues")
+  chatsEnvoyes    Chat[]           @relation("Expediteur")
+  chatsRecus      Chat[]           @relation("Destinataire")
+  sujetLikes      SujetLike[]
+  posteLikes      PosteLike[]
+  commentaireLikes CommentaireLike[]
+
+  @@map("utilisateurs")
+}
+
+model Forum {
+  id    Int    @id @default(autoincrement())
+  nom   String @unique
+
+  sujets Sujet[]
+
+  @@map("forums")
+}
+
+// Sujet = Catégorie (Éducation, Technologie, Juridique, Sport...)
+model Sujet {
+  id           Int      @id @default(autoincrement())
+  titre        String   @unique        // ex: "Éducation", "Technologie"
+  description  String?
+  statut       Statut   @default(valide)
+  dateCreation DateTime @default(now())
+
+  forumId     Int
+  forum       Forum        @relation(fields: [forumId], references: [id])
+
+  auteurId    Int
+  auteur      Utilisateur  @relation("AuteurSujet", fields: [auteurId], references: [id])
+
+  // Moderateur assigned to this topic (may differ from auteur for admin-created topics)
+  moderateurId Int?
+  moderateur   Utilisateur? @relation("ModerateurSujet", fields: [moderateurId], references: [id])
+
+  postes Poste[]
+  likes  SujetLike[]
+
+  @@map("sujets")
+}
+
+// Poste = Discussion sous un Sujet (ex: "L'IA va-t-elle remplacer les devs ?")
+model Poste {
+  id              Int       @id @default(autoincrement())
+  titre           String                          // Titre du post
+  contenu         String    @default("")          // Description / corps du post
+  typeMedia       TypeMedia @default(texte)
+  mediaUrl        String?
+  statut          Statut    @default(valide)
+  datePublication DateTime  @default(now())
+
+  sujetId Int
+  sujet   Sujet       @relation(fields: [sujetId], references: [id])
+
+  auteurId Int
+  auteur   Utilisateur @relation("AuteurPoste", fields: [auteurId], references: [id])
+
+  interactions Interaction[]   // commentaires sous ce post
+  likes        PosteLike[]
+  reports      Report[]
+
+  @@map("postes")
+}
+
+// Interaction = liaison entre un commentaire et un poste
+model Interaction {
+  id   Int             @id @default(autoincrement())
+  date DateTime        @default(now())
+  type TypeInteraction
+
+  auteurId Int
+  auteur   Utilisateur @relation("AuteurInteraction", fields: [auteurId], references: [id])
+
+  posteId Int?
+  poste   Poste? @relation(fields: [posteId], references: [id])
+
+  commentaire Commentaire?
+  reaction    React?
+
+  @@map("interactions")
+}
+
+// Commentaire = réponse sous un Poste
+model Commentaire {
+  id        Int       @id @default(autoincrement())
+  contenu   String
+  typeMedia TypeMedia @default(texte)
+  mediaUrl  String?
+  date      DateTime  @default(now())
+
+  interactionId Int         @unique
+  interaction   Interaction @relation(fields: [interactionId], references: [id], onDelete: Cascade)
+
+  // Nested replies
+  parentId  Int?
+  parent    Commentaire?  @relation("CommentaireReplies", fields: [parentId], references: [id])
+  replies   Commentaire[] @relation("CommentaireReplies")
+
+  likes CommentaireLike[]
+  reports Report[]
+
+  @@map("commentaires")
+}
+
+model React {
+  id            Int    @id @default(autoincrement())
+  typeReaction  String
+
+  interactionId Int         @unique
+  interaction   Interaction @relation(fields: [interactionId], references: [id], onDelete: Cascade)
+
+  @@map("reactions")
+}
+
+model Chat {
+  id       Int      @id @default(autoincrement())
+  message  String
+  lu       Boolean  @default(false)
+  date     DateTime @default(now())
+
+  expediteurId   Int
+  expediteur     Utilisateur @relation("Expediteur",   fields: [expediteurId],   references: [id])
+
+  destinataireId Int
+  destinataire   Utilisateur @relation("Destinataire", fields: [destinataireId], references: [id])
+
+  @@map("chats")
+}
+
+model Report {
+  id      Int      @id @default(autoincrement())
+  raison  String
+  detail  String?
+  statut  Statut   @default(en_attente)
+  date    DateTime @default(now())
+
+  reporteurId Int
+  reporteur   Utilisateur @relation("ReporteurUtilisateur", fields: [reporteurId], references: [id])
+
+  utilisateurSignaleId Int?
+  utilisateurSignale   Utilisateur? @relation("UtilisateurSignale", fields: [utilisateurSignaleId], references: [id])
+
+  commentaireId Int?
+  commentaire   Commentaire? @relation(fields: [commentaireId], references: [id])
+
+  posteId       Int?
+  poste         Poste? @relation(fields: [posteId], references: [id])
+
+  notifications Notification[]
+
+  @@map("reports")
+}
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  type        String
+  message     String
+  lu          Boolean  @default(false)
+  date        DateTime @default(now())
+
+  destinataireId Int
+  destinataire   Utilisateur @relation("NotificationsRecues", fields: [destinataireId], references: [id])
+
+  reportId    Int?
+  report      Report?  @relation(fields: [reportId], references: [id])
+  posteId     Int?
+
+  @@map("notifications")
+}
+
+model SujetLike {
+  id        Int      @id @default(autoincrement())
+  sujetId   Int
+  auteurId  Int
+  sujet     Sujet    @relation(fields: [sujetId], references: [id], onDelete: Cascade)
+  auteur    Utilisateur @relation(fields: [auteurId], references: [id], onDelete: Cascade)
+
+  @@unique([sujetId, auteurId])
+  @@map("sujet_likes")
+}
+
+model PosteLike {
+  id        Int      @id @default(autoincrement())
+  posteId   Int
+  auteurId  Int
+  reaction  String   @default("👍")
+  poste     Poste    @relation(fields: [posteId], references: [id], onDelete: Cascade)
+  auteur    Utilisateur @relation(fields: [auteurId], references: [id], onDelete: Cascade)
+
+  @@unique([posteId, auteurId])
+  @@map("poste_likes")
+}
+
+model CommentaireLike {
+  id            Int      @id @default(autoincrement())
+  commentaireId Int
+  auteurId      Int
+  reaction      String   @default("👍")
+  commentaire   Commentaire @relation(fields: [commentaireId], references: [id], onDelete: Cascade)
+  auteur        Utilisateur @relation(fields: [auteurId], references: [id], onDelete: Cascade)
+
+  @@unique([commentaireId, auteurId])
+  @@map("commentaire_likes")
+}

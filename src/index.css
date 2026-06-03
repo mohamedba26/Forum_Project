@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-50;
+    min-height: 100vh;
+  }
+
+  :focus-visible {
+    outline: 2px solid #3358ee;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-primary-500 text-white hover:bg-primary-600 active:scale-95;
+  }
+  .btn-secondary {
+    @apply btn bg-white text-neutral-700 border border-neutral-200 hover:bg-neutral-50 active:scale-95 
+           dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-neutral-800;
+  }
+  .btn-ghost {
+    @apply btn text-neutral-600 hover:bg-neutral-100 active:scale-95
+           dark:text-neutral-400 dark:hover:bg-neutral-800;
+  }
+  .btn-danger {
+    @apply btn bg-red-500 text-white hover:bg-red-600 active:scale-95;
+  }
+
+  .input {
+    @apply w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-xl placeholder-neutral-400
+           focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 transition-all
+           dark:bg-neutral-900 dark:border-neutral-700 dark:text-white dark:placeholder-neutral-500;
+  }
+
+  .card {
+    @apply bg-white border border-neutral-200 rounded-2xl shadow-sm
+           dark:bg-neutral-900 dark:border-neutral-800;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-lg;
+  }
+  .badge-blue  { @apply badge bg-primary-50 text-primary-700; }
+  .badge-green { @apply badge bg-green-50 text-green-700; }
+  .badge-amber { @apply badge bg-amber-50 text-amber-700; }
+  .badge-red   { @apply badge bg-red-50 text-red-700; }
+  .badge-gray  { @apply badge bg-neutral-100 text-neutral-700; }
+  .badge-pink  { @apply badge bg-pink-50 text-pink-700; }
+
+  .avatar {
+    @apply flex items-center justify-center rounded-full font-medium select-none;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbc8c2; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #a8a49d; }
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeIn 0.2s ease forwards; }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.slide-in { animation: slideIn 0.2s ease forwards; }
+
+@keyframes logoReveal {
+  0% { opacity: 0; transform: scale(0.9) translateX(-20px); filter: blur(10px); }
+  100% { opacity: 1; transform: scale(1) translateX(0); filter: blur(0); }
+}
+
+@keyframes textReveal {
+  0% { opacity: 0; clip-path: inset(0 100% 0 0); }
+  100% { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+@keyframes floatLogo {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.animate-logo-reveal { animation: logoReveal 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+.animate-text-reveal { animation: textReveal 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; animation-delay: 0.6s; opacity: 0; }
+.animate-float { animation: floatLogo 4s ease-in-out infinite; }
