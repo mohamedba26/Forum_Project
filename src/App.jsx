@@ -5,7 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import Layout            from './components/layout/Layout'
 import AuthPage          from './pages/AuthPage'
 import HomePage          from './pages/HomePage'
-import SujetPage         from './pages/SujetPage'
+
 import PostePage         from './pages/PostePage'
 import ProposerSujetPage from './pages/ProposerSujetPage'
 import AjouterSujetPage  from './pages/AjouterSujetPage'
@@ -30,7 +30,7 @@ function AppRoutes() {
       <Route path="/auth" element={<AuthPage />} />
       <Route element={<Layout />}>
         <Route index element={<HomePage />} />
-        <Route path="/sujets/:id" element={<SujetPage />} />
+
         <Route path="/postes/:id" element={<PostePage />} />
         <Route path="/proposer-sujet" element={<ProtectedRoute><ProposerSujetPage /></ProtectedRoute>} />
         <Route path="/ajouter-sujet"  element={<ProtectedRoute><AjouterSujetPage /></ProtectedRoute>} />

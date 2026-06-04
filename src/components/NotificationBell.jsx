@@ -81,13 +81,13 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-10 w-80 bg-white border border-neutral-200 rounded-2xl shadow-xl z-50 overflow-hidden fade-in">
+        <div className="absolute right-0 top-10 w-80 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl shadow-xl z-50 overflow-hidden fade-in">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-100">
-            <span className="text-sm font-semibold text-neutral-800">Notifications</span>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-100 dark:border-neutral-700">
+            <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Notifications</span>
             <div className="flex items-center gap-1">
               {unread > 0 && (
-                <button onClick={markAllRead} className="text-xs text-primary-600 hover:text-primary-800 px-2 py-1 rounded-lg hover:bg-primary-50 transition-colors flex items-center gap-1">
+                <button onClick={markAllRead} className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 px-2 py-1 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-colors flex items-center gap-1">
                   <Check size={11} /> Tout marquer lu
                 </button>
               )}
@@ -105,11 +105,11 @@ export default function NotificationBell() {
               <div
                 key={n.id}
                 onClick={() => handleNotifClick(n)}
-                className={`flex items-start gap-3 px-4 py-3 border-b border-neutral-50 transition-colors hover:bg-neutral-50 ${!n.lu ? 'bg-blue-50/40' : ''} ${n.posteId ? 'cursor-pointer' : 'cursor-default'}`}
+                className={`flex items-start gap-3 px-4 py-3 border-b border-neutral-50 dark:border-neutral-700 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-700/50 ${!n.lu ? 'bg-blue-50/40 dark:bg-blue-900/20' : ''} ${n.posteId ? 'cursor-pointer' : 'cursor-default'}`}
               >
                 <span className="text-lg shrink-0 mt-0.5">{TYPE_ICONS[n.type] || '🔔'}</span>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-xs leading-relaxed ${!n.lu ? 'text-neutral-800 font-medium' : 'text-neutral-500'}`}>
+                  <p className={`text-xs leading-relaxed ${!n.lu ? 'text-neutral-800 dark:text-neutral-200 font-medium' : 'text-neutral-500 dark:text-neutral-400'}`}>
                     {n.message}
                   </p>
                   <p className="text-[10px] text-neutral-400 mt-1">{timeAgo(n.date)}</p>

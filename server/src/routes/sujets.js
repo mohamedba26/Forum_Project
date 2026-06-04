@@ -140,11 +140,9 @@ router.get('/:id/postes', optionalAuth, async (req, res) => {
     const sujetId = +req.params.id
     if (isNaN(sujetId)) return res.status(400).json({ message: 'ID invalide' })
 
-    // Moderator/admin can see all; others only see validated posts
-    const isModOrAdmin = req.user && ['admin', 'moderateur'].includes(req.user.role)
-    const where = isModOrAdmin
-      ? { sujetId, statut: { not: 'supprime' } }
-      : { sujetId, statut: 'valide' }
+    // Only validated posts are shown in the public feed (all users including moderators)
+    // Pending posts are managed via the moderation panel (/postes/moderation)
+    const where = { sujetId, statut: 'valide' }
 
     const postes = await prisma.poste.findMany({
       where,

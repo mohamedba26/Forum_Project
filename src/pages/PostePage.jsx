@@ -5,14 +5,17 @@ import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { forumService } from '../services/forumService'
 import { useAuth } from '../context/AuthContext'
+import { useTranslation } from 'react-i18next'
 import { timeAgo, getInitials, formatDate } from '../utils/helpers'
 import ReportModal from '../components/forum/ReportModal'
 import ReactionPicker from '../components/forum/ReactionPicker'
 import { UserAvatar } from '../components/layout/Navbar'
+import ConfirmModal from '../components/ConfirmModal'
 
 function MediaRenderer({ poste }) {
+  const { t } = useTranslation()
   if (poste.typeMedia === 'image' && poste.mediaUrl)
-    return <img src={poste.mediaUrl} alt="Média" className="rounded-xl max-h-96 object-cover w-full" />
+    return <img src={poste.mediaUrl} alt={t('post.media', 'Média')} className="rounded-xl max-h-96 object-cover w-full" />
   if (poste.typeMedia === 'vocal' && poste.mediaUrl)
     return <audio controls src={poste.mediaUrl} className="w-full mt-2" />
   if (poste.typeMedia === 'video' && poste.mediaUrl)
@@ -22,6 +25,7 @@ function MediaRenderer({ poste }) {
 
 // ── 3-dot context menu ──────────────────────────────────────────────────────
 function ThreeDotsMenu({ onReport, onMessage, canDelete, onDelete, isAuthor }) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const ref = useRef()
 
@@ -35,37 +39,37 @@ function ThreeDotsMenu({ onReport, onMessage, canDelete, onDelete, isAuthor }) {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(o => !o)}
-        className="btn-ghost p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700"
-        title="Options"
+        className="btn-ghost p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:text-neutral-300"
+        title={t('common.options', 'Options')}
       >
         <MoreHorizontal size={18} />
       </button>
       {open && (
-        <div className="absolute right-0 top-8 w-44 bg-white border border-neutral-200 rounded-xl shadow-lg py-1 z-50 fade-in">
+        <div className="absolute right-0 top-8 w-44 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg py-1 z-50 fade-in">
           {onMessage && (
             <button
               onClick={() => { onMessage(); setOpen(false) }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700"
             >
-              <MessageSquare size={14} className="text-blue-500" /> Envoyer un message
+              <MessageSquare size={14} className="text-blue-500" /> {t('post.sendMessage', 'Envoyer un message')}
             </button>
           )}
           {onReport && (
             <button
               onClick={() => { onReport(); setOpen(false) }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700"
             >
-              <Flag size={14} className="text-orange-500" /> Signaler
+              <Flag size={14} className="text-orange-500" /> {t('post.report', 'Signaler')}
             </button>
           )}
           {canDelete && (
             <>
-              <div className="border-t border-neutral-100 my-1" />
+              <div className="border-t border-neutral-100 dark:border-neutral-700 my-1" />
               <button
                 onClick={() => { onDelete(); setOpen(false) }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
               >
-                Supprimer
+                {t('admin.delete', 'Supprimer')}
               </button>
             </>
           )}
@@ -77,6 +81,7 @@ function ThreeDotsMenu({ onReport, onMessage, canDelete, onDelete, isAuthor }) {
 
 // ── Single comment (recursive for replies) ──────────────────────────────────
 function CommentItem({ comment, onReport, onDelete, onReply, currentUserId, isModOrAdmin, isAdmin, depth = 0 }) {
+  const { t } = useTranslation()
   const [likesCount, setLikesCount]         = useState(comment.likesCount || 0)
   const [reactionCounts, setReactionCounts] = useState(comment.reactionCounts || {})
   const [userReaction, setUserReaction]     = useState(comment.userReaction || null)
@@ -86,7 +91,7 @@ function CommentItem({ comment, onReport, onDelete, onReply, currentUserId, isMo
   const navigate = useNavigate()
 
   // Always show real nickname and avatar
-  const displayUser = { nom: comment.auteurNom || 'Anonyme', avatar: comment.auteurAvatar || null }
+  const displayUser = { nom: comment.auteurNom || t('moderator.anonymous', 'Anonyme'), avatar: comment.auteurAvatar || null }
   const isAuthor  = currentUserId && comment.auteurId === currentUserId
   const canDelete = isAuthor || isModOrAdmin
 
@@ -125,14 +130,14 @@ function CommentItem({ comment, onReport, onDelete, onReply, currentUserId, isMo
   }
 
   return (
-    <div className={`flex items-start gap-3 fade-in ${depth > 0 ? 'ml-8 mt-2' : ''}`}>
+    <div className={`flex items-start gap-3 fade-in relative hover:z-50 focus-within:z-50 ${depth > 0 ? 'ml-8 mt-2' : ''}`}>
       {depth > 0 && <CornerDownRight size={14} className="text-neutral-300 mt-2.5 shrink-0" />}
       <UserAvatar user={displayUser} size="w-7 h-7" />
       <div className="flex-1 group">
-        <div className="bg-neutral-50 border border-neutral-100 rounded-xl px-4 py-3">
+        <div className="bg-white dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 rounded-xl px-4 py-3">
           <div className="flex items-center justify-between gap-2 mb-1">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-neutral-700">{displayUser.nom}</span>
+              <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">{displayUser.nom}</span>
               <span className="text-xs text-neutral-400">{timeAgo(comment.date)}</span>
             </div>
             {currentUserId && (
@@ -145,11 +150,11 @@ function CommentItem({ comment, onReport, onDelete, onReply, currentUserId, isMo
               />
             )}
           </div>
-          <p className="text-sm text-neutral-800 leading-relaxed">{comment.contenu}</p>
+          <p className="text-sm text-neutral-800 dark:text-neutral-200 leading-relaxed">{comment.contenu}</p>
           {comment.mediaUrl && comment.typeMedia === 'image' && (
             <img src={comment.mediaUrl} alt="" className="rounded-lg mt-2 max-h-40 object-cover" />
           )}
-          <div className="flex items-center gap-3 mt-2 pt-2 border-t border-neutral-100">
+          <div className="flex items-center gap-3 mt-2 pt-2 border-t border-neutral-100 dark:border-neutral-700">
             <ReactionPicker
               userReaction={userReaction}
               counts={reactionCounts}
@@ -164,7 +169,7 @@ function CommentItem({ comment, onReport, onDelete, onReply, currentUserId, isMo
                 onClick={() => setReplying(r => !r)}
                 className="text-xs text-neutral-400 hover:text-primary-600 transition-colors flex items-center gap-1"
               >
-                <CornerDownRight size={12} /> Répondre
+                <CornerDownRight size={12} /> {t('post.reply', 'Répondre')}
               </button>
             )}
           </div>
@@ -176,7 +181,7 @@ function CommentItem({ comment, onReport, onDelete, onReply, currentUserId, isMo
             <input
               autoFocus
               className="input text-sm py-2 flex-1"
-              placeholder="Votre réponse…"
+              placeholder={t('post.yourReply', 'Votre réponse…')}
               value={replyText}
               onChange={e => setReplyText(e.target.value)}
             />
@@ -184,7 +189,7 @@ function CommentItem({ comment, onReport, onDelete, onReply, currentUserId, isMo
               <Send size={13} />
             </button>
             <button type="button" onClick={() => setReplying(false)} className="btn-secondary text-xs py-2">
-              Annuler
+              {t('common.cancel', 'Annuler')}
             </button>
           </form>
         )}
@@ -214,6 +219,7 @@ function CommentItem({ comment, onReport, onDelete, onReply, currentUserId, isMo
 
 // ── Page ────────────────────────────────────────────────────────────────────
 export default function PostePage() {
+  const { t }               = useTranslation()
   const { id }              = useParams()
   const navigate            = useNavigate()
   const [poste, setPoste]   = useState(null)
@@ -229,6 +235,7 @@ export default function PostePage() {
   const fileRef = useRef()
   const { user, isAdmin, isModerator } = useAuth()
   const isModOrAdmin = isAdmin || isModerator
+  const [modal, setModal] = useState(null)
 
   useEffect(() => {
     setLoading(true)
@@ -240,7 +247,7 @@ export default function PostePage() {
         setUserReaction(p.userReaction || null)
         setComments(c)
       })
-      .catch(() => toast.error('Erreur de chargement'))
+      .catch(() => toast.error(t('common.errorLoading', 'Erreur de chargement')))
       .finally(() => setLoading(false))
   }, [id])
 
@@ -262,7 +269,7 @@ export default function PostePage() {
       setNewComment('')
       setCommentFile(null)
     } catch {
-      toast.error("Impossible d'ajouter le commentaire")
+      toast.error(t('post.errorAddComment', "Impossible d'ajouter le commentaire"))
     } finally {
       setSending(false)
     }
@@ -282,34 +289,43 @@ export default function PostePage() {
           : c
       ))
     } catch {
-      toast.error("Impossible d'ajouter la réponse")
+      toast.error(t('post.errorAddReply', "Impossible d'ajouter la réponse"))
     }
   }
 
-  const handleDeleteComment = async (cid) => {
-    if (!confirm('Supprimer ce commentaire ?')) return
-    try {
-      await forumService.supprimerCommentaire(cid)
-      // Remove from top-level or from replies
-      setComments(prev => prev
-        .filter(c => c.id !== cid)
-        .map(c => ({ ...c, replies: (c.replies || []).filter(r => r.id !== cid) }))
-      )
-      toast.success('Commentaire supprimé')
-    } catch {
-      toast.error('Erreur')
-    }
+  const handleDeleteComment = (cid) => {
+    setModal({
+      title: t('common.confirm', 'Confirmation'),
+      message: t('post.confirmDeleteComment', 'Supprimer ce commentaire ?'),
+      onConfirm: async () => {
+        try {
+          await forumService.supprimerCommentaire(cid)
+          setComments(prev => prev
+            .filter(c => c.id !== cid)
+            .map(c => ({ ...c, replies: (c.replies || []).filter(r => r.id !== cid) }))
+          )
+          toast.success(t('moderator.commentDeleted', 'Commentaire supprimé'))
+        } catch {
+          toast.error(t('common.error', 'Erreur'))
+        }
+      }
+    })
   }
 
-  const handleDeletePoste = async () => {
-    if (!confirm('Voulez-vous vraiment supprimer ce poste ?')) return
-    try {
-      await forumService.supprimerPoste(id)
-      toast.success('Poste supprimé')
-      window.location.href = `/sujets/${poste.sujetId}`
-    } catch {
-      toast.error('Impossible de supprimer ce poste')
-    }
+  const handleDeletePoste = () => {
+    setModal({
+      title: t('common.confirm', 'Confirmation'),
+      message: t('post.confirmDeletePost', 'Voulez-vous vraiment supprimer ce poste ?'),
+      onConfirm: async () => {
+        try {
+          await forumService.supprimerPoste(id)
+          toast.success(t('admin.postDeleted', 'Poste supprimé'))
+          window.location.href = '/'
+        } catch {
+          toast.error(t('post.errorDeletePost', 'Impossible de supprimer ce poste'))
+        }
+      }
+    })
   }
 
   const handleReactPoste = (emoji) => {
@@ -332,12 +348,12 @@ export default function PostePage() {
   }
 
   if (loading) return <div className="flex justify-center py-20"><Loader size={28} className="animate-spin text-neutral-300" /></div>
-  if (!poste)  return <div className="text-center py-20 text-neutral-400">Post introuvable.</div>
+  if (!poste)  return <div className="text-center py-20 text-neutral-400">{t('post.notFound', 'Post introuvable.')}</div>
 
   return (
     <div className="flex flex-col gap-6 fade-in">
-      <Link to="/" className="flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-700 transition-colors w-fit">
-        <ArrowLeft size={15} /> Retour
+      <Link to="/" className="flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-700 dark:text-neutral-300 transition-colors w-fit">
+        <ArrowLeft size={15} /> {t('common.back', 'Retour')}
       </Link>
 
       {/* Post card */}
@@ -345,7 +361,7 @@ export default function PostePage() {
         <div className="flex items-start gap-3 mb-4">
           <UserAvatar user={{ nom: poste.auteurNom, avatar: poste.auteurAvatar }} size="w-10 h-10" />
           <div className="flex-1">
-            <p className="text-sm font-semibold text-neutral-900">{poste.auteurNom || 'Anonyme'}</p>
+            <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{poste.auteurNom || t('moderator.anonymous', 'Anonyme')}</p>
             <p className="text-xs text-neutral-400">{formatDate(poste.datePublication)}</p>
           </div>
           {user && (
@@ -359,8 +375,8 @@ export default function PostePage() {
           )}
         </div>
 
-        {poste.titre && <h1 className="text-lg font-bold text-neutral-900 mb-3">{poste.titre}</h1>}
-        <p className="text-neutral-800 leading-relaxed mb-4">{poste.contenu}</p>
+        {poste.titre && <h1 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 mb-3">{poste.titre}</h1>}
+        <p className="text-neutral-800 dark:text-neutral-200 leading-relaxed mb-4">{poste.contenu}</p>
         <MediaRenderer poste={poste} />
 
         <div className="flex items-center gap-6 mt-4 pt-4 border-t border-neutral-100">
@@ -377,8 +393,8 @@ export default function PostePage() {
 
       {/* Comments section */}
       <div>
-        <h2 className="text-sm font-semibold text-neutral-700 mb-4 flex items-center gap-2">
-          <MessageCircle size={15} /> {comments.length} Commentaire{comments.length !== 1 ? 's' : ''}
+        <h2 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-4 flex items-center gap-2">
+          <MessageCircle size={15} /> {comments.length} {t('post.comment', 'Commentaire')}{comments.length !== 1 ? 's' : ''}
         </h2>
 
         <div className="flex flex-col gap-4">
@@ -402,29 +418,30 @@ export default function PostePage() {
             <textarea
               className="input resize-none mb-3"
               rows={3}
-              placeholder="Votre commentaire…"
+              placeholder={t('post.yourComment', 'Votre commentaire…')}
               value={newComment}
               onChange={e => setNewComment(e.target.value)}
             />
             <div className="flex items-center gap-3">
-              <button type="button" onClick={() => fileRef.current?.click()} className="btn-ghost p-2" title="Ajouter image">
+              <button type="button" onClick={() => fileRef.current?.click()} className="btn-ghost p-2" title={t('post.addImage', 'Ajouter image')}>
                 <Image size={16} />
               </button>
               <input ref={fileRef} type="file" accept="image/*,video/*" className="hidden" onChange={e => setCommentFile(e.target.files[0])} />
               {commentFile && <span className="text-xs text-neutral-500 flex-1 truncate">{commentFile.name}</span>}
               <button type="submit" className="btn-primary ml-auto" disabled={sending || (!newComment.trim() && !commentFile)}>
-                <Send size={14} /> {sending ? 'Envoi…' : 'Commenter'}
+                <Send size={14} /> {sending ? t('common.sending', 'Envoi…') : t('post.doComment', 'Commenter')}
               </button>
             </div>
           </form>
         ) : (
           <div className="mt-6 card p-5 text-center text-sm text-neutral-400">
-            <Link to="/auth" className="text-primary-600 font-medium hover:underline">Connectez-vous</Link> pour commenter.
+            <Link to="/auth" className="text-primary-600 font-medium hover:underline">{t('post.loginToComment', 'Connectez-vous')}</Link> {t('post.toComment', 'pour commenter.')}
           </div>
         )}
       </div>
 
       {reportTarget && <ReportModal target={reportTarget} onClose={() => setReportTarget(null)} />}
+      <ConfirmModal modal={modal} onClose={() => setModal(null)} />
     </div>
   )
 }

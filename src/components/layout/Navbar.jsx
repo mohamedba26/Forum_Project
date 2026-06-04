@@ -9,6 +9,7 @@ import { adminService } from '../../services/adminService'
 import NotificationBell from '../NotificationBell'
 import { AVATARS } from '../../pages/ProfilePage'
 import { useTranslation } from 'react-i18next'
+import LanguageSwitcher from '../LanguageSwitcher'
 
 function NotifBadge({ count }) {
   if (!count || count === 0) return null
@@ -42,16 +43,8 @@ export default function Navbar() {
   const { toggle } = useSidebar()
   const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const [pendingStats, setPendingStats] = useState({ adminCount: 0, modCount: 0 })
-
-  const currentLang = i18n.language
-  const cycleLang = () => {
-    const langs = ['fr', 'ar', 'en']
-    const next = langs[(langs.indexOf(currentLang) + 1) % langs.length]
-    i18n.changeLanguage(next)
-  }
-  const langLabel = { fr: 'FR', ar: 'عربية', en: 'EN' }[currentLang] || 'FR'
 
   useEffect(() => {
     if (!user || (!isAdmin && !isModerator)) return
@@ -71,33 +64,27 @@ export default function Navbar() {
   }
 
   return (
-    <header className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 sticky top-0 z-30">
-      <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
+    <header className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 sticky top-0 z-30 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.10)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)]">
+      <div className="w-full px-4 h-14 flex items-center justify-between gap-4">
         {/* Hamburger + Logo */}
         <div className="flex items-center gap-3 shrink-0">
           <button
             onClick={toggle}
-            className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-600 dark:text-neutral-400"
+            className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-600 dark:text-neutral-300 dark:text-neutral-400"
             title="Basculer le menu"
           >
             <Menu size={20} />
           </button>
-          <Link to="/" className="flex items-center gap-2 text-neutral-900 font-semibold text-base">
-            <img src="/logo2.png" alt="Whisper Logo" className="w-40 h-40 object-contain" />
+          <Link to="/" className="flex items-center gap-2 text-neutral-900 dark:text-neutral-100 font-semibold text-base">
+            <img src={theme === 'dark' ? '/logo3.png' : '/logo2.png'} alt="Whisper Logo" className="w-40 h-40 object-contain" />
           </Link>
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-2 shrink-0">
 
-          {/* Language toggle */}
-          <button
-            onClick={cycleLang}
-            className="btn-ghost text-xs px-2.5 py-1.5 rounded-lg font-bold tracking-wide border border-neutral-200 dark:border-neutral-700"
-            title="Change language"
-          >
-            {langLabel}
-          </button>
+          {/* Language switcher */}
+          <LanguageSwitcher />
 
           {/* Theme toggle */}
           <button
@@ -132,7 +119,7 @@ export default function Navbar() {
                     <div className="px-3 py-2 border-b border-neutral-100 dark:border-neutral-800 flex items-center gap-2.5">
                       <UserAvatar user={user} size="w-9 h-9" />
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-neutral-900 dark:text-white truncate">{user.nom}</p>
+                        <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 dark:text-white truncate">{user.nom}</p>
                         <p className="text-xs text-neutral-400 truncate">{user.email}</p>
                       </div>
                     </div>

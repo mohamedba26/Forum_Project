@@ -47,7 +47,8 @@ function PosteCard({ poste, sujet }) {
   const [likes, setLikes] = useState(poste.likesCount || 0);
   const TypeIcon = TYPE_ICONS[poste.typeMedia] || FileText;
   const { colorClass, Icon: TopicIcon } = sujet ? getSujetStyle(sujet) : { colorClass: 'badge-gray', Icon: Hash };
-  const authorUser = { nom: poste.auteurNom || 'Anonyme', avatar: poste.auteurAvatar || null };
+  const { t } = useTranslation();
+  const authorUser = { nom: poste.auteurNom || t('moderator.anonymous', 'Anonyme'), avatar: poste.auteurAvatar || null };
   const translatedSujetTitle = useTranslatedTitle(sujet?.titre);
 
   const handleReact = (emoji) => {
@@ -66,12 +67,12 @@ function PosteCard({ poste, sujet }) {
     forumService.toggleLikePoste(poste.id, emoji).catch(() => {
       setReactionCounts(prevCounts);
       setUserReaction(prev);
-      toast.error('Erreur lors du like');
+      toast.error(t('subject.errorLike', 'Erreur lors du like'));
     });
   };
 
   return (
-    <Link to={`/postes/${poste.id}`} className="card p-5 hover:shadow-md transition-shadow block group fade-in">
+    <Link to={`/postes/${poste.id}`} className="card p-5 hover:shadow-md hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all block group fade-in">
       <div className="flex items-start gap-3">
         <div className="shrink-0">
           <UserAvatar user={authorUser} size="w-9 h-9" />
@@ -91,7 +92,7 @@ function PosteCard({ poste, sujet }) {
           </div>
 
           {poste.titre && (
-            <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100 leading-snug mb-1 group-hover:text-primary-600 transition-colors">
+            <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 leading-snug mb-1 transition-colors">
               {poste.titre}
             </p>
           )}
@@ -100,6 +101,27 @@ function PosteCard({ poste, sujet }) {
             <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
               {truncate(poste.contenu, 120)}
             </p>
+          )}
+
+          {/* Media thumbnail */}
+          {poste.mediaUrl && poste.typeMedia === 'image' && (
+            <div className="mt-2 rounded-xl overflow-hidden border border-neutral-100 dark:border-neutral-700">
+              <img
+                src={poste.mediaUrl}
+                alt=""
+                className="w-full max-h-40 object-cover"
+              />
+            </div>
+          )}
+          {poste.mediaUrl && poste.typeMedia === 'video' && (
+            <div className="mt-2 rounded-xl overflow-hidden border border-neutral-100 dark:border-neutral-700">
+              <video
+                src={poste.mediaUrl}
+                className="w-full max-h-40 object-cover"
+                muted
+                preload="metadata"
+              />
+            </div>
           )}
 
           <div
@@ -113,7 +135,7 @@ function PosteCard({ poste, sujet }) {
               onReact={handleReact}
               size="sm"
             />
-            <div className="flex items-center gap-1.5 text-neutral-400 group-hover:text-primary-500 transition-colors px-2 py-1">
+            <div className="flex items-center gap-1.5 text-neutral-400 transition-colors px-2 py-1">
               <MessageSquare size={14} />
               <span className="text-xs">{poste.nombreCommentaires ?? 0}</span>
             </div>
@@ -151,7 +173,7 @@ export default function HomePage() {
         );
         setAllPostes(flat);
       })
-      .catch(() => toast.error('Impossible de charger les posts'))
+      .catch(() => toast.error(t('moderator.errorLoadingPosts', 'Impossible de charger les posts')))
       .finally(() => setLoading(false));
   }, []);
 
@@ -165,7 +187,11 @@ export default function HomePage() {
   });
 
   const popularSujets = [...allSujets]
-    .sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0))
+    .map(s => ({
+      ...s,
+      calculatedPostCount: allPostes.filter(p => p.sujet?.id === s.id).length
+    }))
+    .sort((a, b) => b.calculatedPostCount - a.calculatedPostCount)
     .slice(0, 4);
 
   return (
@@ -173,7 +199,7 @@ export default function HomePage() {
 
       {/* Hero Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0e0e15] via-[#161622] to-[#252538] p-6 md:p-8 text-white shadow-xl min-h-[160px] flex flex-col justify-center">
-        <div className="absolute inset-0 opacity-15 pointer-events-none overflow-hidden select-none">
+        <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden select-none">
           <div className="absolute inset-0 animate-logo-reveal animate-float" style={{ clipPath: 'inset(0 60% 0 0)' }}>
             <img src="/dark-banner.png" alt="" className="w-full h-full object-cover" />
           </div>
@@ -231,7 +257,7 @@ export default function HomePage() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 dark:text-white">
                 {topicFilter ? topicFilter.charAt(0).toUpperCase() + topicFilter.slice(1) : t('forum.allPosts')}
               </h2>
               <p className="text-xs text-neutral-400 font-medium">
@@ -249,7 +275,7 @@ export default function HomePage() {
           <div className="flex items-center gap-2 flex-wrap">
             <Link
               to="/"
-              className={`px-4 py-2 rounded-full text-xs font-semibold transition-all backdrop-blur-sm border ${!topicFilter ? 'bg-primary-500 text-white border-primary-500 shadow-md shadow-primary-500/10' : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:border-primary-300 hover:shadow-sm'}`}
+              className={`px-4 py-2 rounded-full text-xs font-semibold transition-all backdrop-blur-sm border ${!topicFilter ? 'bg-primary-500 text-white border-primary-500 shadow-md shadow-primary-500/10' : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-300 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:border-primary-300 hover:shadow-sm'}`}
             >
               {t('forum.all')}
             </Link>
@@ -278,7 +304,7 @@ export default function HomePage() {
           ) : filteredPostes.length === 0 ? (
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-12 text-center shadow-sm">
               <MessageSquare size={56} className="mx-auto text-neutral-300 mb-4 animate-pulse" />
-              <h3 className="font-bold text-neutral-800 dark:text-white text-lg">{t('forum.noPosts')}</h3>
+              <h3 className="font-bold text-neutral-800 dark:text-neutral-200 dark:text-white text-lg">{t('forum.noPosts')}</h3>
               <p className="text-neutral-500 text-sm mt-2 max-w-sm mx-auto">
                 {searchQuery ? t('forum.noPostsSearch') : t('forum.noPostsYet')}
               </p>
@@ -297,7 +323,7 @@ export default function HomePage() {
 
           {/* Popular Topics */}
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-neutral-800 dark:text-white flex items-center gap-2 mb-4">
+            <h3 className="text-sm font-bold text-neutral-800 dark:text-neutral-200 dark:text-white flex items-center gap-2 mb-4">
               <TrendingUp size={16} className="text-amber-500" /> {t('forum.popularTopics')} 🔥
             </h3>
             <div className="flex flex-col gap-3">
@@ -312,12 +338,12 @@ export default function HomePage() {
                     className="flex items-center justify-between p-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors group"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-6 h-6 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center font-bold text-xs text-neutral-600 dark:text-neutral-400">
+                      <div className="w-6 h-6 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center font-bold text-xs text-neutral-600 dark:text-neutral-300 dark:text-neutral-400">
                         {idx + 1}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs font-bold text-neutral-800 dark:text-white truncate group-hover:text-primary-600 transition-colors">{translatedTitle}</p>
-                        <p className="text-[10px] text-neutral-400 font-medium">{s.nombrePostes ?? 0} {t('forum.posts').toLowerCase()} · {s.likesCount || 0} {t('forum.likes')}</p>
+                        <p className="text-xs font-bold text-neutral-800 dark:text-neutral-200 dark:text-white truncate group-hover:text-primary-600 transition-colors">{translatedTitle}</p>
+                        <p className="text-[10px] text-neutral-400 font-medium">{s.calculatedPostCount} {t('forum.posts').toLowerCase()} · {s.likesCount || 0} {t('forum.likes')}</p>
                       </div>
                     </div>
                     <div className={`w-2 h-2 rounded-full ${accentBg}`} />
@@ -330,16 +356,16 @@ export default function HomePage() {
 
           {/* Stats */}
           <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-neutral-800 dark:text-white flex items-center gap-2 mb-4">
+            <h3 className="text-sm font-bold text-neutral-800 dark:text-neutral-200 dark:text-white flex items-center gap-2 mb-4">
               <BarChart2 size={16} className="text-primary-500" /> {t('forum.stats')} 📊
             </h3>
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-neutral-50 dark:bg-neutral-800 p-3 rounded-2xl text-center">
-                <span className="block text-xl font-extrabold text-neutral-800 dark:text-white">{allSujets.length}</span>
+                <span className="block text-xl font-extrabold text-neutral-800 dark:text-neutral-200 dark:text-white">{allSujets.length}</span>
                 <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider">{t('forum.topics')}</span>
               </div>
               <div className="bg-neutral-50 dark:bg-neutral-800 p-3 rounded-2xl text-center">
-                <span className="block text-xl font-extrabold text-neutral-800 dark:text-white">{allPostes.length}</span>
+                <span className="block text-xl font-extrabold text-neutral-800 dark:text-neutral-200 dark:text-white">{allPostes.length}</span>
                 <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider">{t('forum.posts')}</span>
               </div>
             </div>

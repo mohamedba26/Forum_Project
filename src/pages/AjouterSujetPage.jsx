@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, Link } from 'react-router-dom'
 import { ArrowLeft, Send, BookOpen, Cpu, Gavel, Trophy, Music, Coffee, Car, Heart, Globe, Code, PenTool, Hash, Gamepad2, Film, Plane, Users, ShoppingBag, Leaf, Star, Zap, Camera, Briefcase, Dumbbell } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -36,10 +37,11 @@ const COLOR_OPTIONS = [
   { id: 'badge-green', label: 'Vert',   bg: 'bg-green-100',  text: 'text-green-700',  ring: 'ring-green-400',  dot: 'bg-green-500' },
   { id: 'badge-amber', label: 'Ambre',  bg: 'bg-amber-100',  text: 'text-amber-700',  ring: 'ring-amber-400',  dot: 'bg-amber-500' },
   { id: 'badge-red',   label: 'Rouge',  bg: 'bg-red-100',    text: 'text-red-700',    ring: 'ring-red-400',    dot: 'bg-red-500' },
-  { id: 'badge-gray',  label: 'Gris',   bg: 'bg-neutral-100',text: 'text-neutral-700',ring: 'ring-neutral-400',dot: 'bg-neutral-400' },
+  { id: 'badge-gray',  label: 'Gris',   bg: 'bg-neutral-100',text: 'text-neutral-700 dark:text-neutral-300',ring: 'ring-neutral-400',dot: 'bg-neutral-400' },
 ]
 
 export default function AjouterSujetPage() {
+  const { t } = useTranslation()
   const [form, setForm]       = useState({ titre: '', description: '' })
   const [selectedIcon, setSelectedIcon] = useState('Hash')
   const [selectedColor, setSelectedColor] = useState('badge-blue')
@@ -56,10 +58,10 @@ export default function AjouterSujetPage() {
       const metaPrefix = `__meta__${JSON.stringify({ icon: selectedIcon, color: selectedColor })}\n`
       const fullDescription = metaPrefix + (form.description || '')
       await forumService.proposerSujet({ titre: form.titre, description: fullDescription })
-      toast.success('Sujet proposé ! En attente de validation par un admin.')
+      toast.success(t('addSubject.toast.success', 'Sujet proposé ! En attente de validation par un admin.'))
       navigate('/')
     } catch (err) {
-      const msg = err?.response?.data?.message || "Impossible de proposer le sujet"
+      const msg = err?.response?.data?.message || t('addSubject.toast.error', "Impossible de proposer le sujet")
       toast.error(msg)
     } finally {
       setLoading(false)
@@ -72,18 +74,18 @@ export default function AjouterSujetPage() {
 
   return (
     <div className="max-w-xl fade-in">
-      <Link to="/" className="flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-700 mb-6 w-fit">
-        <ArrowLeft size={15} /> Retour
+      <Link to="/" className="flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-700 dark:text-neutral-300 mb-6 w-fit">
+        <ArrowLeft size={15} /> {t('common.back', 'Retour')}
       </Link>
 
       <div className="card p-8">
-        <h1 className="text-xl font-semibold text-neutral-900 mb-1">Proposer un sujet</h1>
+        <h1 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-1">{t('addSubject.title', 'Proposer un sujet')}</h1>
         <p className="text-sm text-neutral-400 mb-2">
-          Proposez un nouveau sujet de discussion (ex : Musique, Cinéma, Voyage…).
+          {t('addSubject.subtitle', 'Proposez un nouveau sujet de discussion (ex : Musique, Cinéma, Voyage…).')}
         </p>
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-6">
           <p className="text-xs text-amber-700 font-medium leading-relaxed">
-            ⏳ Votre proposition sera examinée par un administrateur. Si elle est validée, vous deviendrez automatiquement le <strong>modérateur</strong> de ce sujet.
+            ⏳ {t('addSubject.info', 'Votre proposition sera examinée par un administrateur. Si elle est validée, vous deviendrez automatiquement le modérateur de ce sujet.')}
           </p>
         </div>
 
@@ -91,10 +93,10 @@ export default function AjouterSujetPage() {
 
           {/* Nom du sujet */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1.5">Nom du sujet *</label>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">{t('addSubject.topicName', 'Nom du sujet *')}</label>
             <input
               className="input"
-              placeholder="Ex : Cuisine, Voyage, Musique…"
+              placeholder={t('addSubject.topicNamePlaceholder', 'Ex : Cuisine, Voyage, Musique…')}
               value={form.titre}
               onChange={set('titre')}
               required
@@ -104,18 +106,18 @@ export default function AjouterSujetPage() {
 
           {/* Icon picker */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">Icône</label>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('addSubject.icon', 'Icône')}</label>
             <div className="flex flex-wrap gap-2">
               {ICON_OPTIONS.map(({ id, Icon, label }) => (
                 <button
                   key={id}
                   type="button"
-                  title={label}
+                  title={t(`subjects.${label.toLowerCase()}`, label)}
                   onClick={() => setSelectedIcon(id)}
                   className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all border-2
                     ${selectedIcon === id
                       ? `${selectedColorObj.bg} ${selectedColorObj.text} border-current shadow-sm scale-110`
-                      : 'bg-neutral-50 text-neutral-400 border-transparent hover:bg-neutral-100 hover:text-neutral-600'
+                      : 'bg-neutral-50 text-neutral-400 border-transparent hover:bg-neutral-100 hover:text-neutral-600 dark:text-neutral-300'
                     }`}
                 >
                   <Icon size={18} />
@@ -126,13 +128,13 @@ export default function AjouterSujetPage() {
 
           {/* Color picker */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">Couleur</label>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('addSubject.color', 'Couleur')}</label>
             <div className="flex gap-3 flex-wrap">
               {COLOR_OPTIONS.map(({ id, label, dot, ring }) => (
                 <button
                   key={id}
                   type="button"
-                  title={label}
+                  title={t(`colors.${label.toLowerCase()}`, label)}
                   onClick={() => setSelectedColor(id)}
                   className={`w-8 h-8 rounded-full transition-all border-2 flex items-center justify-center
                     ${dot}
@@ -144,29 +146,29 @@ export default function AjouterSujetPage() {
 
           {/* Live preview */}
           <div className="bg-neutral-50 rounded-2xl p-4 border border-neutral-100">
-            <p className="text-xs font-medium text-neutral-400 mb-2 uppercase tracking-wider">Aperçu</p>
+            <p className="text-xs font-medium text-neutral-400 mb-2 uppercase tracking-wider">{t('addSubject.preview', 'Aperçu')}</p>
             <span className={`${selectedColorObj.id} px-2.5 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1.5`}>
               <PreviewIcon size={12} />
-              {form.titre || 'Nom du sujet'}
+              {form.titre || t('addSubject.topicNameDefault', 'Nom du sujet')}
             </span>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-              Description <span className="text-neutral-400 font-normal">(facultatif)</span>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+              {t('addSubject.description', 'Description')} <span className="text-neutral-400 font-normal">({t('addSubject.optional', 'facultatif')})</span>
             </label>
             <textarea
               className="input resize-none"
               rows={3}
-              placeholder="Décrivez brièvement ce sujet…"
+              placeholder={t('addSubject.descriptionPlaceholder', 'Décrivez brièvement ce sujet…')}
               value={form.description}
               onChange={set('description')}
             />
           </div>
 
           <button type="submit" className="btn-primary justify-center" disabled={loading}>
-            {loading ? 'Envoi en cours…' : <><Send size={14} /> Proposer le sujet</>}
+            {loading ? t('addSubject.sending', 'Envoi en cours…') : <><Send size={14} /> {t('addSubject.submit', 'Proposer le sujet')}</>}
           </button>
         </form>
       </div>

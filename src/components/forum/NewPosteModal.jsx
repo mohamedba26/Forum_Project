@@ -43,14 +43,14 @@ export default function NewPosteModal({ sujetId, onClose, onCreated }) {
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4 fade-in">
       <div className="card w-full max-w-lg p-6">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-base font-semibold text-neutral-900">Nouveau post</h2>
+          <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">Nouveau post</h2>
           <button onClick={onClose} className="btn-ghost p-2"><X size={18} /></button>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           {/* Type selector */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">Type de contenu</label>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Type de contenu</label>
             <div className="flex gap-2">
               {TYPES.map(t => {
                 const Icon = t.icon
@@ -66,7 +66,7 @@ export default function NewPosteModal({ sujetId, onClose, onCreated }) {
 
           {/* Titre */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1.5">Titre</label>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Titre</label>
             <input
               className="input w-full"
               type="text"
@@ -79,7 +79,7 @@ export default function NewPosteModal({ sujetId, onClose, onCreated }) {
 
           {/* Text */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1.5">Contenu</label>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Contenu</label>
             <textarea
               className="input resize-none"
               rows={4}
@@ -93,7 +93,7 @@ export default function NewPosteModal({ sujetId, onClose, onCreated }) {
           {/* File upload for non-text types */}
           {type !== 'texte' && (
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                 Fichier {type}
               </label>
               <button type="button" onClick={() => fileRef.current?.click()}

@@ -31,22 +31,40 @@ router.post('/utilisateur', authenticate, async (req, res) => {
       data: { raison, detail, reporteurId: req.user.id, utilisateurSignaleId: +utilisateurSignaleId }
     })
 
-    const totalReports = await prisma.report.count({ where: { utilisateurSignaleId: +utilisateurSignaleId } })
+    // Count distinct reporters (unique users who reported this person)
+    const uniqueReporters = await prisma.report.groupBy({
+      by: ['reporteurId'],
+      where: { utilisateurSignaleId: +utilisateurSignaleId }
+    })
+    const uniqueCount = uniqueReporters.length
 
-    // At 3 reports → notify all admins
-    if (totalReports >= 3) {
+    console.log(`[REPORT] User "${cible.nom}" (id=${utilisateurSignaleId}) has ${uniqueCount} unique reporter(s). Threshold=3.`)
+
+    // At 3 unique reporters → block user and notify all admins
+    if (uniqueCount >= 3) {
+      console.log(`[REPORT] Threshold reached! Blocking user "${cible.nom}" and notifying admins...`)
+
+      await prisma.utilisateur.update({
+        where: { id: +utilisateurSignaleId },
+        data: { estBloque: true }
+      })
+
       const admins = await prisma.utilisateur.findMany({ where: { role: 'admin' }, select: { id: true } })
+      console.log(`[REPORT] Sending notification to ${admins.length} admin(s)...`)
+
       await Promise.all(admins.map(a =>
         notify({
           destinataireId: a.id,
           type:    'user_flagged',
-          message: `⚠️ L'utilisateur "${cible.nom}" a reçu ${totalReports} signalements. Action requise.`,
+          message: `⚠️ L'utilisateur "${cible.nom}" a reçu ${uniqueCount} signalements de différents utilisateurs et a été automatiquement bloqué. Vérifiez les rapports.`,
           reportId: report.id,
         })
       ))
+
+      console.log(`[REPORT] Done. User blocked and admins notified.`)
     }
 
-    res.status(201).json(report)
+    res.status(201).json({ ...report, uniqueReporterCount: uniqueCount })
   } catch (error) {
     res.status(500).json({ message: 'Erreur interne', details: error.message })
   }
@@ -154,7 +172,7 @@ router.get('/admin', authenticate, requireAdmin, async (req, res) => {
     const result = await Promise.all(reported.map(async r => {
       const user = await prisma.utilisateur.findUnique({
         where: { id: r.utilisateurSignaleId },
-        select: { id: true, nom: true, email: true, estBloque: true, role: true }
+        select: { id: true, nom: true, email: true, estBloque: true, role: true, avatar: true }
       })
       const reports = await prisma.report.findMany({
         where: { utilisateurSignaleId: r.utilisateurSignaleId, statut: 'en_attente' },

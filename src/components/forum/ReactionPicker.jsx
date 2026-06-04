@@ -16,7 +16,7 @@ export function ReactionSummary({ counts = {}, userReaction, total }) {
   return (
     <span className="flex items-center gap-0.5">
       {entries.map(([emoji, count]) => (
-        <span key={emoji} className={`inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full ${userReaction === emoji ? 'bg-blue-100 text-blue-700 font-semibold' : 'bg-neutral-100 text-neutral-600'}`}>
+        <span key={emoji} className={`inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full ${userReaction === emoji ? 'bg-blue-100 text-blue-700 font-semibold' : 'bg-neutral-100 text-neutral-600 dark:text-neutral-300'}`}>
           {emoji} {count}
         </span>
       ))}
@@ -107,7 +107,7 @@ export default function ReactionPicker({ userReaction, counts = {}, total = 0, o
           ${sizeMap[size]}
           ${hasReaction
             ? 'text-blue-600 bg-blue-50 font-semibold hover:bg-blue-100'
-            : 'text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100'
+            : 'text-neutral-400 hover:text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100'
           }
           ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
         `}

@@ -6,6 +6,49 @@ const router = Router()
 
 const VALID_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '😡']
 
+// GET /api/likes/me/reactions
+router.get('/me/reactions', authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const [posteLikes, commentaireLikes, sujetLikes] = await Promise.all([
+      prisma.posteLike.findMany({
+        where: { auteurId: userId },
+        include: { poste: { select: { id: true, titre: true } } },
+        orderBy: { id: 'desc' },
+        take: 50
+      }),
+      prisma.commentaireLike.findMany({
+        where: { auteurId: userId },
+        include: { 
+          commentaire: { 
+            include: { interaction: { include: { poste: { select: { id: true, titre: true } } } } }
+          } 
+        },
+        orderBy: { id: 'desc' },
+        take: 50
+      }),
+      prisma.sujetLike.findMany({
+        where: { auteurId: userId },
+        include: { sujet: { select: { id: true, titre: true } } },
+        orderBy: { id: 'desc' },
+        take: 50
+      })
+    ]);
+
+    let reactions = [
+      ...posteLikes.map(l => ({ id: `p${l.id}`, internalId: l.id, type: 'poste', reaction: l.reaction, targetId: l.posteId, targetTitre: l.poste?.titre })),
+      ...commentaireLikes.filter(l => l.commentaire).map(l => ({ id: `c${l.id}`, internalId: l.id, type: 'commentaire', reaction: l.reaction, targetId: l.commentaire?.interaction?.posteId, targetTitre: l.commentaire?.interaction?.poste?.titre, contenu: l.commentaire.contenu })),
+      ...sujetLikes.map(l => ({ id: `s${l.id}`, internalId: l.id, type: 'sujet', reaction: '👍', targetId: l.sujetId, targetTitre: l.sujet?.titre }))
+    ];
+
+    reactions.sort((a, b) => b.internalId - a.internalId);
+    res.json(reactions.slice(0, 100));
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur interne' })
+  }
+})
+
 // ── Sujet like (no reaction, just toggle) ───────────────────────────────────
 router.post('/sujet/:id', authenticate, async (req, res) => {
   const sujetId = +req.params.id

@@ -131,6 +131,19 @@ app.get('/api/chat/users', authenticate, async (req, res) => {
     res.status(500).json({ message: 'Erreur interne' })
   }
 })
+
+app.get('/api/chat/users/:id', authenticate, async (req, res) => {
+  try {
+    const user = await prisma.utilisateur.findUnique({
+      where: { id: +req.params.id },
+      select: { id: true, nom: true, avatar: true, role: true }
+    })
+    if (!user) return res.status(404).json({ message: 'User not found' })
+    res.json(user)
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur interne' })
+  }
+})
 app.get('/api/stats/pending', authenticate, async (req, res) => {
   try {
     const { role } = req.user
@@ -141,11 +154,25 @@ app.get('/api/stats/pending', authenticate, async (req, res) => {
 
     if (role === 'admin') {
       const sujetsPending = await prisma.sujet.count({ where: { statut: 'en_attente' } })
-      const reportsPending = await prisma.report.count({ where: { statut: 'en_attente' } })
+      
+      const userReports = await prisma.report.groupBy({
+        by: ['utilisateurSignaleId'],
+        where: { utilisateurSignaleId: { not: null }, statut: 'en_attente' }
+      })
+      const reportsPending = userReports.length
+      
       adminCount = sujetsPending + postesPending + reportsPending
     }
     
-    if (role === 'admin' || role === 'moderateur') {
+    if (role === 'moderateur') {
+      const mesSujets = await prisma.sujet.findMany({
+        where: { moderateurId: req.user.id },
+        select: { id: true }
+      })
+      const sujetIds = mesSujets.map(s => s.id)
+      modCount = await prisma.poste.count({ where: { statut: 'en_attente', sujetId: { in: sujetIds } } })
+    }
+    if (role === 'admin') {
       modCount = postesPending
     }
 

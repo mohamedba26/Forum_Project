@@ -27,7 +27,11 @@ export const socketService = {
   },
 
   sendMessage(chatId, message) {
-    socket?.emit('send_message', { chatId, message })
+    return new Promise((resolve) => {
+      socket?.emit('send_message', { chatId, message }, (response) => {
+        resolve(response)
+      })
+    })
   },
 
   onMessage(callback) {

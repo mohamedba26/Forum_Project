@@ -45,7 +45,7 @@ export function initSocket(io) {
       })))
     })
 
-    socket.on('send_message', async ({ chatId, message }) => {
+    socket.on('send_message', async ({ chatId, message }, callback) => {
       const [idA, idB] = chatId.split('_').map(Number)
       const destinataireId = socket.userId === idA ? idB : idA
 
@@ -67,7 +67,40 @@ export function initSocket(io) {
         lu:        chat.lu,
       }
 
-      io.to(chatId).emit('receive_message', payload)
+      socket.to(chatId).emit('receive_message', payload)
+      if (typeof callback === 'function') callback(payload)
+    })
+
+    socket.on('delete_message', async ({ messageId, chatId }) => {
+      try {
+        const message = await prisma.chat.findUnique({ where: { id: messageId } })
+        if (message && message.expediteurId === socket.userId) {
+          await prisma.chat.delete({ where: { id: messageId } })
+          io.to(chatId).emit('message_deleted', { messageId })
+        }
+      } catch (error) {
+        console.error('Error deleting message:', error)
+      }
+    })
+
+    socket.on('delete_chat', async ({ chatId }) => {
+      try {
+        const [idA, idB] = chatId.split('_').map(Number)
+        // Verify user is part of the chat
+        if (socket.userId !== idA && socket.userId !== idB) return
+        
+        await prisma.chat.deleteMany({
+          where: {
+            OR: [
+              { expediteurId: idA, destinataireId: idB },
+              { expediteurId: idB, destinataireId: idA },
+            ]
+          }
+        })
+        io.to(chatId).emit('chat_deleted', { chatId })
+      } catch (error) {
+        console.error('Error deleting chat:', error)
+      }
     })
 
     socket.on('disconnect', () => {

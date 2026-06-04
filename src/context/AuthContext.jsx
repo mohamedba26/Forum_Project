@@ -4,16 +4,15 @@ import { authService } from '../services/authService'
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
+  const [user, setUser] = useState(() => {
     const stored = localStorage.getItem('fm_user')
     const token  = localStorage.getItem('fm_token')
-    if (stored && token) {
-      setUser(JSON.parse(stored))
-    }
-    setLoading(false)
+    return (stored && token) ? JSON.parse(stored) : null
+  })
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    // Ready
   }, [])
 
   const login = useCallback(async (credentials) => {

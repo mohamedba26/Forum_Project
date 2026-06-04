@@ -73,6 +73,14 @@
 ::-webkit-scrollbar-thumb { background: #cbc8c2; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #a8a49d; }
 
+/* Dark mode badge overrides (dark: inside @apply not supported in Tailwind v3) */
+.dark .badge-blue  { background-color: #1a296e; color: #89a9f8; }
+.dark .badge-green { background-color: #052e16; color: #86efac; }
+.dark .badge-amber { background-color: #451a03; color: #fcd34d; }
+.dark .badge-red   { background-color: #450a0a; color: #fca5a5; }
+.dark .badge-gray  { background-color: #4a4845; color: #cbc8c2; }
+.dark .badge-pink  { background-color: #500724; color: #f9a8d4; }
+
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }

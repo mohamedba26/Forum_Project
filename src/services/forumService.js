@@ -23,6 +23,8 @@ export const forumService = {
   getCategories: () => api.get('/categories'),
   getPostesEnAttente: ()      => api.get('/postes/moderation', { params: { statut: 'en_attente' } }),
   getMesPostes:       ()      => api.get('/postes/me'),
+  getMesCommentaires: ()      => api.get('/postes/me/commentaires'),
+  getMesReactions:    ()      => api.get('/likes/me/reactions'),
 
   // Commentaires
   getCommentairesEnAttente: () => api.get('/commentaires/moderation'),

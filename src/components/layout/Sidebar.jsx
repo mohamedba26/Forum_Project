@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { Home, FileText, MessageCircle, Loader } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { TOPICS, getDynamicTopicStyles, parseSujetMeta } from '../../utils/helpers'
@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import { forumService } from '../../services/forumService'
 import { useTranslation } from 'react-i18next'
 
-const navItem = 'flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-white transition-colors'
+const navItem = 'flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-neutral-600 dark:text-neutral-300 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:text-neutral-100 dark:hover:text-white transition-colors'
 const activeClass = '!bg-primary-50 dark:!bg-primary-900/30 !text-primary-700 dark:!text-primary-400'
 
 function getSujetStyle(sujet) {
@@ -26,6 +26,7 @@ function toKey(titre) {
 export default function Sidebar() {
   const { user } = useAuth()
   const { t } = useTranslation()
+  const location = useLocation()
   const [userSujets, setUserSujets] = useState([])
   const [loadingSujets, setLoadingSujets] = useState(true)
 
@@ -34,11 +35,10 @@ export default function Sidebar() {
       .then(data => setUserSujets(data))
       .catch(() => {})
       .finally(() => setLoadingSujets(false))
-  }, [])
+  }, [location.pathname])
 
   return (
-    <nav className="flex flex-col gap-6">
-      {/* Navigation */}
+    <nav className="flex flex-col gap-6 pt-0 pb-5 px-2 h-[calc(100vh-3.5rem)] overflow-y-auto">
       <div>
         <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider px-3 mb-2">
           {t('nav.navigation')}

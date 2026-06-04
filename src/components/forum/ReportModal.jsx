@@ -51,7 +51,7 @@ export default function ReportModal({ target, onClose }) {
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4 fade-in">
       <div className="card w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
+          <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
             <Flag size={16} className="text-red-500" />
             Signaler {TYPE_LABELS[target.type] || 'ce contenu'}
           </h2>
@@ -60,10 +60,10 @@ export default function ReportModal({ target, onClose }) {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">Motif *</label>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Motif *</label>
             <div className="flex flex-col gap-1.5">
               {RAISONS.map(r => (
-                <label key={r} className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border cursor-pointer transition-all text-sm ${raison === r ? 'border-red-300 bg-red-50 text-red-700' : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'}`}>
+                <label key={r} className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border cursor-pointer transition-all text-sm ${raison === r ? 'border-red-300 bg-red-50 text-red-700' : 'border-neutral-200 text-neutral-600 dark:text-neutral-300 hover:border-neutral-300'}`}>
                   <input type="radio" name="raison" value={r} className="sr-only" onChange={() => setRaison(r)} />
                   <span className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0 ${raison === r ? 'border-red-500' : 'border-neutral-300'}`}>
                     {raison === r && <span className="w-2 h-2 rounded-full bg-red-500" />}
@@ -75,7 +75,7 @@ export default function ReportModal({ target, onClose }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1.5">Précisions (optionnel)</label>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">Précisions (optionnel)</label>
             <textarea className="input resize-none" rows={2} placeholder="Décrivez le problème…" value={detail} onChange={e => setDetail(e.target.value)} />
           </div>
 

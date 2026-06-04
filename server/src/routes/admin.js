@@ -6,7 +6,7 @@ const router = Router()
 router.use(requireAdmin)
 
 const safeUser = (u) => ({
-  id: u.id, nom: u.nom, email: u.email, role: u.role, estBloque: u.estBloque, createdAt: u.createdAt
+  id: u.id, nom: u.nom, email: u.email, role: u.role, estBloque: u.estBloque, createdAt: u.createdAt, avatar: u.avatar
 })
 
 // GET /api/admin/utilisateurs

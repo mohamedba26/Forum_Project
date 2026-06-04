@@ -1,15 +1,24 @@
 import { formatDistanceToNow, format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { fr, ar, enUS as en } from 'date-fns/locale'
 import { BookOpen, Cpu, Gavel, Trophy, Music, Coffee, Car, Heart, Globe, Code, PenTool, Hash, Gamepad2, Film, Plane, Users, ShoppingBag, Leaf, Star, Zap, Camera, Briefcase, Dumbbell } from 'lucide-react';
+import i18n from '../i18n';
+
+const locales = { fr, ar, en };
+const getLocale = () => {
+  const lang = i18n.language?.split('-')[0];
+  return locales[lang] || locales.fr;
+};
 
 export const timeAgo = (date) => {
   if (!date) return ''
-  return formatDistanceToNow(new Date(date), { addSuffix: true, locale: fr })
+  return formatDistanceToNow(new Date(date), { addSuffix: true, locale: getLocale() })
 }
 
 export const formatDate = (date) => {
   if (!date) return ''
-  return format(new Date(date), 'dd MMM yyyy à HH:mm', { locale: fr })
+  const lang = i18n.language?.split('-')[0] || 'fr';
+  const formatStr = lang === 'fr' ? "dd MMM yyyy 'à' HH:mm" : lang === 'ar' ? "dd MMM yyyy 'في' HH:mm" : "dd MMM yyyy 'at' HH:mm";
+  return format(new Date(date), formatStr, { locale: getLocale() })
 }
 
 export const getInitials = (name = '') =>

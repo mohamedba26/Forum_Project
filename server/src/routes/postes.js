@@ -21,6 +21,29 @@ router.get('/postes/me', authenticate, async (req, res) => {
   }
 })
 
+// GET /api/postes/me/commentaires
+router.get('/postes/me/commentaires', authenticate, async (req, res) => {
+  try {
+    const interactions = await prisma.interaction.findMany({
+      where: { auteurId: req.user.id, type: 'commentaire' },
+      include: {
+        commentaire: true,
+        poste: { select: { id: true, titre: true } }
+      },
+      orderBy: { date: 'desc' }
+    })
+    res.json(interactions.filter(i => i.commentaire).map(i => ({
+      id: i.commentaire.id,
+      contenu: i.commentaire.contenu,
+      date: i.date,
+      posteId: i.poste?.id,
+      posteTitre: i.poste?.titre || 'Sujet supprimé'
+    })))
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur interne' })
+  }
+})
+
 // GET /api/postes/moderation — pending posts for moderator's sujets
 router.get('/postes/moderation', authenticate, requireModo, async (req, res) => {
   try {
